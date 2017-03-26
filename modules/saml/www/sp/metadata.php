@@ -83,6 +83,7 @@ foreach ($assertionsconsumerservices as $services) {
             if (!in_array(Constants::NS_SAMLP, $supported_protocols, true)) {
                 $supported_protocols[] = Constants::NS_SAMLP;
             }
+            $acsArray['isDefault'] = true;
             break;
         case 'urn:oasis:names:tc:SAML:1.0:profiles:browser-post':
             $acsArray['Binding'] = 'urn:oasis:names:tc:SAML:1.0:profiles:browser-post';
@@ -260,6 +261,12 @@ if ($spconfig->hasValue('redirect.sign')) {
     $metaArray20['redirect.validate'] = $spconfig->getBoolean('redirect.sign');
 } elseif ($spconfig->hasValue('sign.authnrequest')) {
     $metaArray20['validate.authnrequest'] = $spconfig->getBoolean('sign.authnrequest');
+}
+
+if ($spconfig->hasValue('metadata.supported.protocols')) {
+    $supported_protocols = $spconfig->getArray('metadata.supported.protocols');
+} else {
+    $supported_protocols = array('urn:oasis:names:tc:SAML:1.1:protocol', Constants::NS_SAMLP);
 }
 
 $metaArray20['metadata-set'] = 'saml20-sp-remote';

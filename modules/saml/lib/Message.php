@@ -483,9 +483,13 @@ class Message
 
         // Shoaib: setting the appropriate binding based on parameter in sp-metadata defaults to HTTP_POST
         $ar->setProtocolBinding($protbind);
+        //$ar->setIssuer($spMetadata->getString('entityid'));
         $issuer = new Issuer();
+        $issuer->setFormat("urn:oasis:names:tc:SAML:2.0:nameid-format:entity ");
+        $issuer->setNameQualifier($spMetadata->getString('entityid'));
         $issuer->setValue($spMetadata->getString('entityid'));
         $ar->setIssuer($issuer);
+
         $ar->setAssertionConsumerServiceIndex($spMetadata->getInteger('AssertionConsumerServiceIndex', null));
         $ar->setAttributeConsumingServiceIndex($spMetadata->getInteger('AttributeConsumingServiceIndex', null));
 
@@ -518,9 +522,11 @@ class Message
         Configuration $dstMetadata
     ): LogoutRequest {
         $lr = new LogoutRequest();
+        //$lr->setIssuer($srcMetadata->getString('entityid'));
         $issuer = new Issuer();
-        $issuer->setValue($srcMetadata->getString('entityid'));
-        $issuer->setFormat(Constants::NAMEID_ENTITY);
+        $issuer->setFormat("urn:oasis:names:tc:SAML:2.0:nameid-format:entity ");
+        $issuer->setNameQualifier($spMetadata->getString('entityid'));
+        $issuer->setValue($spMetadata->getString('entityid'));
         $lr->setIssuer($issuer);
 
         self::addRedirectSign($srcMetadata, $dstMetadata, $lr);
