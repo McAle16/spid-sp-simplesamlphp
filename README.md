@@ -95,3 +95,4 @@ Credits
 -------
 
 Per la collaborazione si ringrazia il Comune di Firenze
+
