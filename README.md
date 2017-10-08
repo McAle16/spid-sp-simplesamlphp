@@ -32,7 +32,6 @@ mkdir cert
 ```bash
 cp config-templates/config-spid.php config/config.php
 cp config-templates/authsources-spid.php config/authsources.php
-
 ```
 
 * Creazione di un proprio certificato applicativo per la generazione dei metadati da inviare ad AGID
