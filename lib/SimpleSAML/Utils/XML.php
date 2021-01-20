@@ -121,10 +121,10 @@ class XML
 
         switch ($type) {
             case 'in':
-                Logger::debug('Received message:');
+                Logger::notice('Received message:');
                 break;
             case 'out':
-                Logger::debug('Sending message:');
+                Logger::notice('Sending message:');
                 break;
             case 'decrypt':
                 Logger::debug('Decrypted message:');
@@ -138,7 +138,11 @@ class XML
 
         $str = self::formatXMLString($message);
         foreach (explode("\n", $str) as $line) {
-            Logger::debug($line);
+            if ($type === "in" || $type === "out") {
+                Logger::notice($line);
+            } else {
+                Logger::debug($line);
+            }
         }
     }
 

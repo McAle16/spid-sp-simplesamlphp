@@ -42,6 +42,7 @@ class Metadata
      * @see "Metadata for the OASIS Security Assertion Markup Language (SAML) V2.0", section 2.3.2.2.
      */
     public static $VALID_CONTACT_OPTIONS = [
+        'extensions',
         'contactType',
         'emailAddress',
         'givenName',

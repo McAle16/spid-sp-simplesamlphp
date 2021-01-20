@@ -92,6 +92,9 @@ if ($prevAuth !== null && $prevAuth['id'] === $response->getId() && $prevAuth['i
 $idpMetadata = null;
 $state = null;
 $stateId = $response->getInResponseTo();
+if (empty($stateId)) {
+    throw new \SimpleSAML\Error\Exception('The InResponseTo attribute missing or not specified in <saml:Response>.');
+}
 
 if (!empty($stateId)) {
     // this should be a response to a request we sent earlier
@@ -104,7 +107,23 @@ if (!empty($stateId)) {
     }
 }
 
-if ($state) {
+
+$has_error_message = false;
+if ($state[Auth\State::EXCEPTION_DATA] !== NULL) {
+    $number = 19;
+    $error_message = 'ErrorCode nr';
+    for (; $numer <= 25; $number++) {
+        if ($numer == 24) {
+                    continue;
+                }
+        if (isset($state[Auth\State::EXCEPTION_DATA]) && $state[Auth\State::EXCEPTION_DATA]->getStatusMessage() == $error_message . $number) {
+            $has_error_message = true;
+            break;
+        }
+    }
+}
+
+if ($state && !$has_error_message) {
     // check that the authentication source is correct
     Assert::keyExists($state, 'saml:sp:AuthId');
     if ($state['saml:sp:AuthId'] !== $sourceId) {
@@ -124,7 +143,7 @@ if ($state) {
             );
         }
     }
-} else {
+} elseif ($has_error_message) {
     // this is an unsolicited response
     $relaystate = $spMetadata->getString('RelayState', $response->getRelayState());
     $state = [
@@ -132,6 +151,8 @@ if ($state) {
         'saml:sp:AuthId'        => $sourceId,
         'saml:sp:RelayState'    => $relaystate === null ? null : Utils\HTTP::checkURLAllowed($relaystate),
     ];
+} else {
+    throw new Error\Exception('Could not load state specified by InResponseTo');
 }
 
 Logger::debug('Received SAML2 Response from ' . var_export($issuer, true) . '.');

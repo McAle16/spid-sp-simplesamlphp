@@ -294,6 +294,20 @@ class State
              * request if that is possible. If not, show an error.
              */
 
+        if ($state[self::EXCEPTION_DATA] !== null) {
+            $numer = 19;
+            $error_message = 'ErrorCode nr';
+            for (; $numer <= 25 ; $numer++) {
+                if ($numer == 24) {
+                    continue;
+                }
+
+                if (isset($state[self::EXCEPTION_DATA]) && $state[self::EXCEPTION_DATA]->getStatusMessage() == $error_message . $numer) {
+                    return $state;
+                }
+            }
+        }
+
             $msg = 'Wrong stage in state. Was \'' . $state[self::STAGE] .
                 '\', should be \'' . $stage . '\'.';
 
@@ -341,7 +355,7 @@ class State
      */
     public static function throwException(array $state, Error\Exception $exception): void
     {
-        if (array_key_exists(self::EXCEPTION_HANDLER_URL, $state)) {
+        /*if (array_key_exists(self::EXCEPTION_HANDLER_URL, $state)) {
             // Save the exception
             $state[self::EXCEPTION_DATA] = $exception;
             $id = self::saveState($state, self::EXCEPTION_STAGE);
@@ -358,12 +372,12 @@ class State
 
             call_user_func($func, $exception, $state);
             Assert::true(false);
-        } else {
+        } else {*/
             /*
              * No exception handler is defined for the current state.
              */
             throw $exception;
-        }
+        //}
         throw new \Exception(); // This should never happen
     }
 

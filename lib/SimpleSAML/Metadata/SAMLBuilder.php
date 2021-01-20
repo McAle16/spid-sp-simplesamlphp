@@ -381,6 +381,7 @@ class SAMLBuilder
                 }
 
                 $t->setIndex($ep['index']);
+                $t->setIsDefault((isset($ep['isDefault']) ? $ep['isDefault'] : null));
             } else {
                 $t = new EndpointType();
             }
@@ -457,6 +458,47 @@ class SAMLBuilder
         }
 
         $spDesc->addAttributeConsumingService($attributeconsumer);
+
+        $eidasMinimumAttributeconsumer = new AttributeConsumingService();
+        $eidasMinimumAttributeconsumer->setIndex(99);
+        $eidasMinimumAttributeconsumer->setServiceName(['it'=>'eIDAS Natural Person Minimum Attribute Set']);
+
+        $attributes = [
+            'spidCode',
+            'name',
+            'familyName',
+            'placeOfBirth',
+        ];
+
+        foreach ($attributes as $friendlyName => $attribute) {
+            $t = new RequestedAttribute();
+            $t->setName($attribute);
+            $eidasMinimumAttributeconsumer->addRequestedAttribute($t);
+        }
+
+        $spDesc->addAttributeConsumingService($eidasMinimumAttributeconsumer);
+
+        $eidasFullAttributeconsumer = new AttributeConsumingService();
+        $eidasFullAttributeconsumer->setIndex(100);
+        $eidasFullAttributeconsumer->setServiceName(['it' => 'eIDAS Natural Person Full Attribute Set']);
+
+        $attributes = [
+            'spidCode',
+            'name',
+            'familyName',
+            'dateOfBirth',
+            'placeOfBirth',
+            'address',
+            'gender'
+        ];
+
+        foreach ($attributes as $friendlyName => $attribute) {
+            $t = new RequestedAttribute();
+            $t->setName($attribute);
+            $eidasFullAttributeconsumer->addRequestedAttribute($t);
+        }
+
+        $spDesc->addAttributeConsumingService($eidasFullAttributeconsumer);
     }
 
 
@@ -527,6 +569,7 @@ class SAMLBuilder
                 'Location' => $acs,
             ];
         }
+        $endpoints[0]['isDefault'] = true;
         $e->setAssertionConsumerService(self::createEndpoints($endpoints, true));
 
         $this->addAttributeConsumingService($e, $metadata);
@@ -645,6 +688,10 @@ class SAMLBuilder
 
         if (!empty($details['attributes'])) {
             $e->setContactPersonAttributes($details['attributes']);
+        }
+
+        if (isset($details['extensions'])) {
+            $e->setSpidExtensions($details['extensions']);
         }
 
         if (isset($details['company'])) {
