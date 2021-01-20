@@ -1,0 +1,97 @@
+diff --git a/src/SAML2/Message.php b/src/SAML2/Message.php
+index 76bbbee4..7bb16052 100644
+--- a/src/SAML2/Message.php
++++ b/src/SAML2/Message.php
+@@ -456,7 +456,9 @@ abstract class Message extends SignedElement
+         }
+
+         if ($this->issuer !== null) {
+-            $this->issuer->toXML($root);
++            $issuer = $this->issuer->toXML($root);
++            $issuer->setAttribute('Format', 'urn:oasis:names:tc:SAML:2.0:nameid-format:entity');
++            $issuer->setAttribute('NameQualifier', $this->issuer->getNameQualifier());
+         }
+
+         Extensions::addList($root, $this->extensions);
+diff --git a/src/SAML2/XML/md/ContactPerson.php b/src/SAML2/XML/md/ContactPerson.php
+index 2ad70685..f8de87f2 100644
+--- a/src/SAML2/XML/md/ContactPerson.php
++++ b/src/SAML2/XML/md/ContactPerson.php
+@@ -24,6 +24,13 @@ class ContactPerson
+      */
+     private $contactType;
+
++    /**
++     * The SpidExtensions.
++     *
++     * @var array
++     */
++    private $SpidExtensions = [];
++
+     /**
+      * Extensions on this element.
+      *
+@@ -317,6 +324,29 @@ class ContactPerson
+     }
+
+
++    /**
++     * Collect the value of the SpidExtensions-property
++     *
++     * @return array
++     */
++    public function getSpidExtensions(): array
++    {
++        return $this->SpidExtensions;
++    }
++
++
++    /**
++     * Set the value of the SpidExtensions-property
++     *
++     * @param array $extensions
++     * @return void
++     */
++    public function setSpidExtensions(array $spidExtensions): void
++    {
++        $this->SpidExtensions = $spidExtensions;
++    }
++
++
+     /**
+      * Collect the value of the Extensions-property
+      *
+@@ -403,6 +433,21 @@ class ContactPerson
+
+         $e->setAttribute('contactType', $this->getContactType());
+
++        $contactPersonDoc = $e->ownerDocument;
++        $contactPersonElement = $contactPersonDoc->createElement('md:Extensions');
++        $e->appendChild($contactPersonElement);
++        $extensionsDoc = $contactPersonElement->ownerDocument;
++
++        if (!empty($this->getSpidExtensions())) {
++            foreach ($this->getSpidExtensions() as $name => $value) {
++                $extensionsElement = $extensionsDoc->createElementNS('https://spid.gov.it/saml-extensions', "spid:$name", $value);
++                $contactPersonElement->appendChild($extensionsElement);
++            }
++
++            $extensionsDoc = $contactPersonElement->ownerDocument;
++            $contactPersonElement->appendChild($extensionsElement);
++        }
++
+         foreach ($this->getContactPersonAttributes() as $attr => $val) {
+             $e->setAttribute($attr, $val);
+         }
+@@ -419,10 +464,7 @@ class ContactPerson
+             Utils::addString($e, Constants::NS_MD, 'md:SurName', $this->SurName);
+         }
+         if (!empty($this->getEmailAddress())) {
+-            /** @var array $addresses */
+-            $addresses = preg_filter('/^/', 'mailto:', $this->EmailAddress);
+-
+-            Utils::addStrings($e, Constants::NS_MD, 'md:EmailAddress', false, $addresses);
++            Utils::addStrings($e, Constants::NS_MD, 'md:EmailAddress', false, $this->EmailAddress);
+         }
+         if (!empty($this->getTelephoneNumber())) {
+             Utils::addStrings($e, Constants::NS_MD, 'md:TelephoneNumber', false, $this->getTelephoneNumber());
